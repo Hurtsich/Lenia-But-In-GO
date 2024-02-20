@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	billy := organism.NewOrganism(100)
+	billy := organism.NewOrganism(20)
 	fmt.Println("Billy ready !")
 	createGIF(billy, "billy")
 }
@@ -23,10 +23,8 @@ func createGIF(o *organism.Organism, imageName string) {
 		fmt.Printf("Year: %v\n", i)
 		delays = append(delays, 7)
 		photo := o.Photo()
-		fmt.Println("Photo !")
 		images = append(images, photo)
 		o.Breathe(10)
-		fmt.Println("BREATHE !")
 	}
 	defer o.Die()
 

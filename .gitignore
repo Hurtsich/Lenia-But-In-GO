@@ -22,5 +22,8 @@
 # idea folder
 .idea/
 
+# main
+**/main
+
 # Go workspace file
 go.work

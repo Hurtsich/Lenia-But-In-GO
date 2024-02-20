@@ -9,7 +9,6 @@ import (
 type Sensor interface {
 	Sense() float64
 	Handshake([][]*Cell)
-	GetNeighbors() int
 }
 
 type Cell struct {

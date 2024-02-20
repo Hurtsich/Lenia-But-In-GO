@@ -71,6 +71,9 @@ func (o *Organism) Photo() *image.Paletted {
 	topLeft := image.Point{0, 0}
 	bottomRight := image.Point{len(o.matrice[0]), len(o.matrice)}
 	photo := image.NewPaletted(image.Rectangle{topLeft, bottomRight}, helper.GetPalette())
+	randx := rand.Intn(len(o.matrice))
+	randy := rand.Intn(len(o.matrice[0]))
+	fmt.Printf("%d:%d = %f\n", randx, randy, o.matrice[randx][randy].GetStatus())
 	for col, cellColumn := range o.matrice {
 		for row, blob := range cellColumn {
 			photo.Set(row, col, helper.GetColor(blob.GetStatus()))

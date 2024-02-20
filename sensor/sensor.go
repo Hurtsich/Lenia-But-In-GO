@@ -8,19 +8,17 @@ import (
 )
 
 type Donut struct {
-	origin      image.Point
-	neighbors   []*cell.Cell
-	neighborsNb int
+	origin            image.Point
+	neighbors         []*cell.Cell
+	weightedNeighbors []*cell.Cell
+	r                 float64
 }
 
 func NewDonut(origin image.Point) *Donut {
 	return &Donut{
 		origin: origin,
+		r:      4.00,
 	}
-}
-
-func (s *Donut) GetNeighbors() int {
-	return s.neighborsNb
 }
 
 func (s *Donut) Sense() float64 {
@@ -28,22 +26,75 @@ func (s *Donut) Sense() float64 {
 	for _, blob := range s.neighbors {
 		cpt += blob.GetStatus()
 	}
+	for _, blob := range s.weightedNeighbors {
+		cpt += blob.GetStatus() * 0.5
+	}
+
 	return cpt
 }
 
 func (s *Donut) Handshake(m [][]*cell.Cell) {
 	var result []*cell.Cell
+	var weightedResult []*cell.Cell
 
-	xMax := s.origin.X + len(m[0])
-	yMax := s.origin.Y + len(m)
-	for x := s.origin.X; x < xMax; x++ {
-		for y := s.origin.Y; y < yMax; y++ {
+	for x, col := range m {
+		for y, _ := range col {
 			distance := plane.GetDistance(s.origin, image.Point{helper.Mod(x, len(m[0])), helper.Mod(y, len(m))})
-			if distance >= 5 && distance <= 7 {
+			if (distance >= s.r-1 && distance < s.r) || (distance > s.r && distance <= s.r+1) {
+				weightedResult = append(weightedResult, m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))])
+			} else if distance == s.r {
 				result = append(result, m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))])
-				s.neighborsNb++
 			}
 		}
 	}
 	s.neighbors = result
+	//fmt.Printf("I have %d neighbors\n", len(result))
+	s.weightedNeighbors = weightedResult
+	//fmt.Printf("I have %d weighted neighbors\n", len(weightedResult))
+}
+
+type MultiCircle struct {
+	origin            image.Point
+	neighbors         []*cell.Cell
+	weightedNeighbors []*cell.Cell
+	r                 float64
+}
+
+func NewMultiCircle(origin image.Point) *MultiCircle {
+	return &MultiCircle{
+		origin: origin,
+		r:      5.00,
+	}
+}
+
+func (s *MultiCircle) Sense() float64 {
+	cpt := 0.00
+	for _, blob := range s.neighbors {
+		cpt += blob.GetStatus()
+	}
+	for _, blob := range s.weightedNeighbors {
+		cpt += blob.GetStatus() * 0.5
+	}
+
+	return cpt
+}
+
+func (s *MultiCircle) Handshake(m [][]*cell.Cell) {
+	var result []*cell.Cell
+	var weightedResult []*cell.Cell
+
+	for x, col := range m {
+		for y, _ := range col {
+			distance := plane.GetDistance(s.origin, image.Point{helper.Mod(x, len(m[0])), helper.Mod(y, len(m))})
+			if (distance >= s.r-3 && distance <= s.r-2) || (distance >= s.r+2 && distance <= s.r+3) {
+				weightedResult = append(weightedResult, m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))])
+			} else if distance == s.r {
+				result = append(result, m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))])
+			}
+		}
+	}
+	s.neighbors = result
+	//fmt.Printf("I have %d neighbors\n", len(result))
+	s.weightedNeighbors = weightedResult
+	//fmt.Printf("I have %d weighted neighbors\n", len(weightedResult))
 }
