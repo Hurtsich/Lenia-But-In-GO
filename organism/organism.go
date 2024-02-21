@@ -44,7 +44,7 @@ func NewOrganism(length int) *Organism {
 				filter := sensor.NewDonut(image.Point{x, y})
 				filter.Handshake(organism.matrice)
 				blob.SetFilter(filter)
-				blob.SetGrowth(growth.DefaultGrowth)
+				blob.SetGrowth(growth.SmoothGrowth)
 				organism.tickers = append(organism.tickers, blob.GetDuration())
 				organism.starts = append(organism.starts, blob.GetTick())
 				go blob.Live(organism.ctx)
@@ -76,7 +76,7 @@ func (o *Organism) Photo() *image.Paletted {
 	fmt.Printf("%d:%d = %f\n", randx, randy, o.matrice[randx][randy].GetStatus())
 	for col, cellColumn := range o.matrice {
 		for row, blob := range cellColumn {
-			photo.Set(row, col, helper.GetColor(blob.GetStatus()))
+			photo.Set(col, row, helper.GetColor(blob.GetStatus()))
 		}
 	}
 	return photo
@@ -85,7 +85,7 @@ func (o *Organism) Photo() *image.Paletted {
 func randomStatus() float64 {
 	f := rand.Float64()
 	if f > 0.75 {
-		return f
+		return 1.00
 	}
 	return 0.00
 }
