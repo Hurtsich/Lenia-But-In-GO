@@ -2,7 +2,6 @@ package cell
 
 import (
 	"context"
-	"fmt"
 	"sync/atomic"
 )
 
@@ -14,31 +13,33 @@ type Sensor interface {
 type Cell struct {
 	sensor Sensor
 	status atomic.Value
-	core   Core
+	core   *Core
 	grow   func(float64, float64) float64
 }
 
-func NewCell(status float64) *Cell {
+func NewCell() *Cell {
 	blob := &Cell{
 		core: NewCore(),
 	}
-	blob.status.Store(status)
+	blob.SetStatus(0.00)
 	return blob
 }
 
 func (c *Cell) Live(ctx context.Context) {
-	fmt.Println("Cell ready to report !")
+	//fmt.Println("Cell ready to report !")
 	for {
 		select {
 		case <-ctx.Done():
 			break
 		default:
 
-			_ = <-c.duration
+			_ = <-c.core.duration
 
 			outerSum, innerSum := c.sensor.Sense()
 
-			<-c.tick
+			c.core.antenna <- struct{}{}
+
+			<-c.core.tick
 
 			val := c.grow(outerSum, innerSum)
 			//fmt.Printf("My inner circle : %f, my outer one : %f : my value : %f\n", innerSum, outerSum, val)
@@ -67,11 +68,10 @@ func (c *Cell) SetGrowth(f func(float64, float64) float64) {
 func (c *Cell) GetStatus() float64 {
 	return c.status.Load().(float64)
 }
-
-func (c *Cell) GetDuration() chan float64 {
-	return c.duration
+func (c *Cell) SetStatus(status float64) {
+	c.status.Store(status)
 }
 
-func (c *Cell) GetTick() chan struct{} {
-	return c.tick
+func (c *Cell) GetCore() *Core {
+	return c.core
 }

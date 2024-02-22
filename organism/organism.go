@@ -3,17 +3,18 @@ package organism
 import (
 	"Lenia/cell"
 	"Lenia/growth"
-	"Lenia/helper"
 	"Lenia/sensor"
 	"context"
 	"fmt"
 	"image"
 	"math/rand"
+	"sync"
 )
 
 type Organism struct {
 	matrice [][]*cell.Cell
 	tickers []chan float64
+	signals []chan struct{}
 	starts  []chan struct{}
 	ctx     context.Context
 }
@@ -23,6 +24,7 @@ var (
 )
 
 func NewOrganism(length int) *Organism {
+	palette = BlackToRedPalette()
 	organism = Organism{matrice: make([][]*cell.Cell, length), ctx: context.Background()}
 	for x := range organism.matrice {
 		organism.matrice[x] = make([]*cell.Cell, length)
@@ -32,7 +34,7 @@ func NewOrganism(length int) *Organism {
 		for y := 0; y < length; y++ {
 			fmt.Printf("Generating cell at %d, %d\n", x, y)
 			if organism.matrice[x][y] == nil {
-				blob := cell.NewCell(randomStatus())
+				blob := cell.NewCell()
 				organism.matrice[x][y] = blob
 			}
 		}
@@ -45,41 +47,74 @@ func NewOrganism(length int) *Organism {
 				filter.Handshake(organism.matrice)
 				blob.SetFilter(filter)
 				blob.SetGrowth(growth.SmoothGrowth)
-				organism.tickers = append(organism.tickers, blob.GetDuration())
-				organism.starts = append(organism.starts, blob.GetTick())
+				core := blob.GetCore()
+				organism.tickers = append(organism.tickers, core.GetDuration())
+				organism.starts = append(organism.starts, core.GetTick())
+				organism.signals = append(organism.signals, core.GetAntenna())
 				go blob.Live(organism.ctx)
 			}
 		}
+		fmt.Printf("Next col : %d\n", x)
 	}
+	setupSmoothLife(organism.matrice)
 	return &organism
 }
 
 func (o *Organism) Breathe(duration float64) {
-	for _, ticker := range o.tickers {
-		ticker <- duration
+	wg := new(sync.WaitGroup)
+	batch := 500
+
+	for i := 0; i < len(o.tickers); i += batch {
+		j := i + batch
+		if j > len(o.tickers) {
+			j = len(o.tickers)
+		}
+		wg.Add(1)
+		go startDuration(wg, o.tickers[i:j], duration)
 	}
-	for _, start := range o.starts {
+	wg.Wait()
+	for i := 0; i < len(o.signals); i += batch {
+		j := i + batch
+		if j > len(o.signals) {
+			j = len(o.signals)
+		}
+		wg.Add(1)
+		go kickStartLife(wg, o.signals[i:j])
+	}
+	wg.Wait()
+	for i := 0; i < len(o.starts); i += batch {
+		j := i + batch
+		if j > len(o.starts) {
+			j = len(o.starts)
+		}
+		wg.Add(1)
+		go tellThem(wg, o.starts[i:j])
+	}
+	wg.Wait()
+}
+
+func startDuration(wg *sync.WaitGroup, ticks []chan float64, duration float64) {
+	defer wg.Done()
+	for _, tick := range ticks {
+		tick <- duration
+	}
+}
+
+func kickStartLife(wg *sync.WaitGroup, starts []chan struct{}) {
+	defer wg.Done()
+	for _, start := range starts {
+		<-start
+	}
+}
+
+func tellThem(wg *sync.WaitGroup, starts []chan struct{}) {
+	defer wg.Done()
+	for _, start := range starts {
 		start <- struct{}{}
 	}
 }
-
 func (o *Organism) Die() {
 	o.ctx.Done()
-}
-
-func (o *Organism) Photo() *image.Paletted {
-	topLeft := image.Point{0, 0}
-	bottomRight := image.Point{len(o.matrice[0]), len(o.matrice)}
-	photo := image.NewPaletted(image.Rectangle{topLeft, bottomRight}, helper.GetPalette())
-	randx := rand.Intn(len(o.matrice))
-	randy := rand.Intn(len(o.matrice[0]))
-	fmt.Printf("%d:%d = %f\n", randx, randy, o.matrice[randx][randy].GetStatus())
-	for col, cellColumn := range o.matrice {
-		for row, blob := range cellColumn {
-			photo.Set(col, row, helper.GetColor(blob.GetStatus()))
-		}
-	}
-	return photo
 }
 
 func randomStatus() float64 {
