@@ -12,19 +12,17 @@ type Sensor interface {
 }
 
 type Cell struct {
-	sensor   Sensor
-	status   atomic.Value
-	duration chan float64
-	tick     chan struct{}
-	grow     func(float64) float64
+	sensor Sensor
+	status atomic.Value
+	core   *Core
+	grow   func(float64) float64
 }
 
-func NewCell(status float64) *Cell {
+func NewCell() *Cell {
 	blob := &Cell{
-		duration: make(chan float64),
-		tick:     make(chan struct{}),
+		core: NewCore(),
 	}
-	blob.status.Store(status)
+	blob.SetStatus(0.00)
 	return blob
 }
 
@@ -36,11 +34,13 @@ func (c *Cell) Live(ctx context.Context) {
 			break
 		default:
 
-			elapsed := <-c.duration
+			elapsed := <-c.core.duration
 
 			sumNeigh := c.sensor.Sense()
 
-			<-c.tick
+			c.core.antenna <- struct{}{}
+
+			<-c.core.tick
 
 			val := c.grow(sumNeigh) * (1 / elapsed)
 			newStatus := c.GetStatus() + val
@@ -68,10 +68,10 @@ func (c *Cell) GetStatus() float64 {
 	return c.status.Load().(float64)
 }
 
-func (c *Cell) GetDuration() chan float64 {
-	return c.duration
+func (c *Cell) GetCore() *Core {
+	return c.core
 }
 
-func (c *Cell) GetTick() chan struct{} {
-	return c.tick
+func (c *Cell) SetStatus(f float64) {
+	c.status.Store(f)
 }
