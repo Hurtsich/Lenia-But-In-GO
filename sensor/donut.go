@@ -53,10 +53,10 @@ func (s *Donut) Handshake(m [][]*cell.Cell) {
 	for x := xMin; x < xMax; x++ {
 		for y := yMin; y < yMax; y++ {
 			distance := plane.GetDistance(s.origin, image.Point{x, y})
-			if (distance >= s.r-2 && distance < s.r-1) || (distance > s.r+1 && distance <= s.r+2) {
+			if (distance >= s.r-8 && distance < s.r-2) || (distance > s.r+2 && distance <= s.r+8) {
 				weightedResult = append(weightedResult, m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))])
 				s.nbWeightedNeighbors++
-			} else if distance >= s.r-1 && distance <= s.r+1 {
+			} else if distance >= s.r-2 && distance <= s.r+2 {
 				result = append(result, m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))])
 				s.nbNeighbors++
 			}

@@ -24,7 +24,7 @@ var (
 )
 
 func NewOrganism(length int) *Organism {
-	palette = BlackToRedPalette()
+	palette = PurpleToYellowPalette()
 	organism = Organism{matrice: make([][]*cell.Cell, length), ctx: context.Background()}
 	for x := range organism.matrice {
 		organism.matrice[x] = make([]*cell.Cell, length)
@@ -43,7 +43,7 @@ func NewOrganism(length int) *Organism {
 		for y := 0; y < length; y++ {
 			if organism.matrice[x][y] != nil {
 				blob := organism.matrice[x][y]
-				filter := sensor.NewDonut(image.Point{x, y})
+				filter := sensor.NewMultiCircle(image.Point{x, y})
 				filter.Handshake(organism.matrice)
 				blob.SetFilter(filter)
 				blob.SetGrowth(growth.DefaultGrowth)
@@ -54,14 +54,15 @@ func NewOrganism(length int) *Organism {
 				go blob.Live(organism.ctx)
 			}
 		}
+		fmt.Printf("Init col number %d\n", x)
 	}
-	setupSimpleLenia(organism.matrice)
+	setupMultiCircleLenia(organism.matrice)
 	return &organism
 }
 
 func (o *Organism) Breathe(duration float64) {
 	wg := new(sync.WaitGroup)
-	batch := 100
+	batch := 500
 
 	for i := 0; i < len(o.tickers); i += batch {
 		j := i + batch

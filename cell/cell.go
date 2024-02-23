@@ -2,7 +2,6 @@ package cell
 
 import (
 	"context"
-	"fmt"
 	"sync/atomic"
 )
 
@@ -27,7 +26,7 @@ func NewCell() *Cell {
 }
 
 func (c *Cell) Live(ctx context.Context) {
-	fmt.Println("Cell ready to report !")
+	//fmt.Println("Cell ready to report !")
 	for {
 		select {
 		case <-ctx.Done():
@@ -44,7 +43,7 @@ func (c *Cell) Live(ctx context.Context) {
 
 			val := c.grow(sumNeigh) * (1 / elapsed)
 			newStatus := c.GetStatus() + val
-			fmt.Printf("My neighbors gave give me %f value which means i'm growing %f much and now i'm %f\n", sumNeigh, val, newStatus)
+			//fmt.Printf("My neighbors gave give me %f value which means i'm growing %f much and now i'm %f\n", sumNeigh, val, newStatus)
 			if newStatus > 1 {
 				c.status.Store(1.00)
 			} else if val < 0 {

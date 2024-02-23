@@ -12,7 +12,7 @@ import (
 
 func main() {
 	start := time.Now()
-	billy := organism.NewOrganism(200)
+	billy := organism.NewOrganism(500)
 	fmt.Println("Billy ready !")
 	createGIF(billy, "billy")
 	fmt.Printf("Ellapsed %f", time.Now().Sub(start).Seconds())
