@@ -43,7 +43,7 @@ func NewOrganism(length int) *Organism {
 		for y := 0; y < length; y++ {
 			if organism.matrice[x][y] != nil {
 				blob := organism.matrice[x][y]
-				filter := sensor.NewMultiCircle(image.Point{x, y})
+				filter := sensor.NewDonut(image.Point{x, y})
 				filter.Handshake(organism.matrice)
 				blob.SetFilter(filter)
 				blob.SetGrowth(growth.DefaultGrowth)
@@ -56,7 +56,7 @@ func NewOrganism(length int) *Organism {
 		}
 		fmt.Printf("Init col number %d\n", x)
 	}
-	setupMultiCircleLenia(organism.matrice)
+	setupSimpleLenia(organism.matrice)
 	return &organism
 }
 

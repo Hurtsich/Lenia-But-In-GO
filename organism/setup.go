@@ -10,13 +10,14 @@ import (
 )
 
 func setupSimpleLenia(m [][]*cell.Cell) {
-	randPoints := getRandPoints(len(m))
+	r := 30.00
+	offset := 12.00
+	randPoints := getRandPoints(r, offset, len(m))
 
 	for x, col := range m {
 		for y, blob := range col {
 			if collection.Contains(randPoints, image.Point{x, y}, plane.PointEqual) {
 				origin := image.Point{x, y}
-				r := 20.00
 				xMin := origin.X - int(r*2)
 				yMin := origin.Y - int(r*2)
 
@@ -26,9 +27,9 @@ func setupSimpleLenia(m [][]*cell.Cell) {
 				for x := xMin; x < xMax; x++ {
 					for y := yMin; y < yMax; y++ {
 						distance := plane.GetDistance(origin, image.Point{x, y})
-						if (distance >= r-5 && distance < r-1) || (distance > r+1 && distance <= r+5) {
+						if (distance >= r-(offset*2) && distance < r-offset) || (distance > r+offset && distance <= r+(offset*2)) {
 							m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))].SetStatus(0.5)
-						} else if distance >= r-1 && distance <= r+1 {
+						} else if distance >= r-offset && distance <= r+offset {
 							m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))].SetStatus(1.00)
 						}
 					}
@@ -43,14 +44,14 @@ func setupSimpleLenia(m [][]*cell.Cell) {
 }
 
 func setupMultiCircleLenia(m [][]*cell.Cell) {
-	randPoints := getRandPoints(len(m))
+	r := 35.00
+	offset := 9.00
+	randPoints := getRandPoints(r, offset, len(m))
 
 	for x, col := range m {
 		for y, blob := range col {
 			if collection.Contains(randPoints, image.Point{x, y}, plane.PointEqual) {
 				origin := image.Point{x, y}
-				r := 35.00
-				offset := 9.00
 				xMin := origin.X - int(r*2)
 				yMin := origin.Y - int(r*2)
 
@@ -78,7 +79,7 @@ func setupMultiCircleLenia(m [][]*cell.Cell) {
 	}
 }
 
-func getRandPoints(length int) []image.Point {
+func getRandPoints(r, offset float64, length int) []image.Point {
 	var result []image.Point
 	randX := rand.Intn(length)
 	randY := rand.Intn(length)
@@ -90,7 +91,7 @@ func getRandPoints(length int) []image.Point {
 		randY = rand.Intn(length)
 		randPoint := image.Point{randX, randY}
 		distance := plane.GetDistance(point, randPoint)
-		if distance < 35 && distance > 26 {
+		if distance == r {
 			result = append(result, randPoint)
 			cpt++
 		}

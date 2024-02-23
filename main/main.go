@@ -12,7 +12,7 @@ import (
 
 func main() {
 	start := time.Now()
-	billy := organism.NewOrganism(500)
+	billy := organism.NewOrganism(300)
 	fmt.Println("Billy ready !")
 	createGIF(billy, "billy")
 	fmt.Printf("Ellapsed %f", time.Now().Sub(start).Seconds())
@@ -22,7 +22,7 @@ func createGIF(o *organism.Organism, imageName string) {
 	var images []*image.Paletted
 	var delays []int
 
-	for i := 0; i < 200; i++ {
+	for i := 0; i < 100; i++ {
 		fmt.Printf("Year: %v\n", i)
 		delays = append(delays, 7)
 		photo := o.Photo()
