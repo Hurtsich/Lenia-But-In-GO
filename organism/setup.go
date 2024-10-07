@@ -10,8 +10,8 @@ import (
 )
 
 func setupSimpleLenia(m [][]*cell.Cell) {
-	r := 30.00
-	offset := 12.00
+	r := 15.00
+	offset := 2.00
 	randPoints := getRandPoints(r, offset, len(m))
 
 	for x, col := range m {
@@ -28,8 +28,10 @@ func setupSimpleLenia(m [][]*cell.Cell) {
 					for y := yMin; y < yMax; y++ {
 						distance := plane.GetDistance(origin, image.Point{x, y})
 						if (distance >= r-(offset*2) && distance < r-offset) || (distance > r+offset && distance <= r+(offset*2)) {
+							m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))].SetStatus(0.2)
+						} else if distance > r-offset && distance < r+offset {
 							m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))].SetStatus(0.5)
-						} else if distance >= r-offset && distance <= r+offset {
+						} else if distance == r {
 							m[helper.Mod(x, len(m[0]))][helper.Mod(y, len(m))].SetStatus(1.00)
 						}
 					}
@@ -91,7 +93,7 @@ func getRandPoints(r, offset float64, length int) []image.Point {
 		randY = rand.Intn(length)
 		randPoint := image.Point{randX, randY}
 		distance := plane.GetDistance(point, randPoint)
-		if distance == r {
+		if distance <= r*2 && distance > r+offset {
 			result = append(result, randPoint)
 			cpt++
 		}

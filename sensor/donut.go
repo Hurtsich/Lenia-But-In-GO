@@ -20,8 +20,8 @@ type Donut struct {
 func NewDonut(origin image.Point) *Donut {
 	return &Donut{
 		origin:              origin,
-		r:                   30.00,
-		offset:              12.00,
+		r:                   6.00,
+		offset:              2.00,
 		nbNeighbors:         0,
 		nbWeightedNeighbors: 0,
 	}
